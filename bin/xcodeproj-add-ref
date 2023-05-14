@@ -1,0 +1,53 @@
+#!/usr/bin/env ruby
+
+require 'xcodeproj'
+
+if ARGV.count == 0
+  puts %{
+  WARNING: This script is experimental and should be used at your own risk.
+
+  No warranty is provided or implied.
+  Any damage to you XCode project is your own responsibility.
+
+  IF YOU DO NOT ACCEPT THESE TERMS, DO NOT USE THIS SCRIPT.
+
+  Usage: xcodeproj-add-ref "<project name>" <files> [files...]
+
+  <project name> This is expected to be:
+    - project
+    - source group (folder)
+    - target name
+
+  - <files> added to the source group and target source build phase
+  - The source group is then sorted
+  - The project is saved.
+  }
+
+  exit 1
+end
+
+# The name of the XCodeProject (.xcodeproj will be added)
+project_name = ARGV[0]
+target_name = project_name
+
+ARGV.shift
+
+files = ARGV
+
+project_xcodeproj = "#{project_name}.xcodeproj"
+project = Xcodeproj::Project.open(project_xcodeproj)
+source_group = project.main_group[project_name]
+target = project.targets.filter { |t| t.name == target_name }
+
+files.each do |file|
+  source_group.new_file file
+end
+
+files.each do |file|
+  file_ref = source_group.files.find { |f| f.path == file }
+  target.source_build_phase.add_file_reference file_ref
+end
+
+source_group.sort
+
+project.save
