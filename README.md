@@ -22,6 +22,8 @@ Basically, these scripts could blow up an XCode project.
 If you weren’t able to fix it up if things go sideways, despite all the
 warnings, you’d be on your own. Issues will close without comment.
 
+Good thing you know how to get yourself out of that sort of mess!
+
 # Scripts
 
 ## `bin/xcodeproj-add-ref`
