@@ -37,7 +37,7 @@ files = ARGV
 project_xcodeproj = "#{project_name}.xcodeproj"
 project = Xcodeproj::Project.open(project_xcodeproj)
 source_group = project.main_group[project_name]
-target = project.targets.filter { |t| t.name == target_name }
+target = project.targets.find { |t| t.name == target_name }
 
 files.each do |file|
   source_group.new_file file
