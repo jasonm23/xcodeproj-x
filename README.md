@@ -50,7 +50,8 @@ are used.
 
 ## xcodeproj-add-ref
 
-Add file(s) to a XCode project
+Add file(s) to a XCode project, they will be added to a source group and target/build
+phase. The source group is also sorted.
     
 ### Usage
 
@@ -64,10 +65,6 @@ xcodeproj-add-ref <project name> <files> [files...]
 - Location of: `<project_name>`.xcodeproj
 - Source Group: `<project_name>`
 - Build Target: `<project_name>`
-
-
-<files> added to the source group and target source build phase.  The source group is then sorted, the project will is saved.
-
 
 # License
 
