@@ -1,0 +1,118 @@
+#!/bin/bash
+# shellcheck disable=SC3060
+
+xcproj_extract_info() {
+
+cat <<DOC
+
+Extract code definitions from a .swift to new file(s), Adding them to the XCode
+project file refs and build sources.
+
+Usage:
+
+    $(basename $0) <project name> <swift file>
+
+Interactively select/extract from <swift file>:  struct, class, extension, protocol or enum
+Import statements from <swift file> will be added to the extracted files automatically.
+
+Saved to files and added to XCodeproj file references and build target.
+
+The <project name> should match all the following {name}:
+
+    {project name}.xcodeproj
+    Group {project name} at top level of project file references
+    Build Target {project name}
+
+Requires:
+fzf          : $(which fzf)
+
+DOC
+}
+
+if    [[ "$(which rg)" == "rg not found" \
+      || "$(which fzf)" == "fzf not found" \
+      || $# != 2 ]]; then
+  xcproj_extract_info
+  exit 1
+fi
+
+project_name="$1"
+swift_file="$2"
+xcode_project_name="${project_name}.xcodeproj"
+
+if [[ ! -d "${xcode_project_name}" ]]; then
+  echo "${xcode_project_name} not found"
+  exit 1
+fi
+
+# Copy unique imports
+imports_tmp_file=$(mktemp $0.XXXXXXXX)
+grep -E "^import " "$swift_file" | sort -u > "$imports_tmp_file"
+
+# Use fzf to select line ranges in the given .swift filename
+line_select_temp_file=$(mktemp $0.XXXXXXXX)
+
+cat -n "$swift_file" \
+    | fzf \
+    --reverse \
+    --height 30 \
+    --no-sort \
+    --multi \
+    --header \
+    "Select to extract & add
+e.g. struct StructName -> StructName.swift -> ${project_name}.xcodeproj:
+Use [Tab] to Mark Start + End line(s) of one or more of:
+    class|struct|extension|enum|protocol" \
+    > "$line_select_temp_file"
+
+line_count=$(wc -l "$line_select_temp_file" | awk '{print $1}' )
+
+# shellcheck disable=SC3006
+if (( line_count % 2 != 0 )); then
+  cat <<MESSAGE
+Failed to extract from $swift_file
+- Mark the start and end of selection(s)
+MESSAGE
+
+  rm "$line_select_temp_file"
+  exit 1
+fi
+
+cut -f1 < "$line_select_temp_file" | tr -d '\t ' | paste -d ',' - - \
+    | tac |
+    while read -r selection
+    do
+        selection_temp_filename=$(mktemp "${swift_file/.swift/}.${selection/,/..}.swift.XXXXXXXX")
+        swift_temp_filename=$(mktemp "${swift_file/.swift/}.XXXXXXXX")
+
+        sed -n "${selection}p" "$swift_file" > "$selection_temp_filename"
+        sed "${selection}d" "$swift_file" > "$swift_temp_filename"
+        cat "$swift_temp_filename" > "$swift_file"
+
+        # search the file for a struct, class, extension, protocol, enum name.
+        # Use the first one.
+        name="$(tr -d '\n' < "$selection_temp_filename" | perl -pe 's/(struct|extension|class|protocol|enum) (.*?)[: ].*\{.*/$2/g')"
+        swift_dir=$(dirname $swift_file)
+        output_filename="$swift_dir/$name.swift"
+
+        if [[ -f "$output_filename" ]]; then
+          echo "$output_filename already exists. Aborting."
+          rm $selection_temp_filename
+          rm $swift_temp_filename
+          exit 1
+        fi
+
+        # shellcheck disable=3034
+        cat<<HERE > "$output_filename"
+$(< "$imports_tmp_file")
+
+$(< "$selection_temp_filename")
+HERE
+
+        rm "$selection_temp_filename" "${swift_temp_filename}"
+        echo "Created: $output_filename"
+
+        xcodeproj-add-ref "$project_name" "$(basename "${output_filename}")"
+    done
+
+rm "$imports_tmp_file" "${line_select_temp_file}"
