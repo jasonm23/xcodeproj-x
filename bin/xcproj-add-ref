@@ -6,22 +6,21 @@ if ARGV.count == 0
   puts %{
   WARNING: This script is experimental and should be used at your own risk.
 
-  No warranty is provided or implied.
-  Any damage to you XCode project is your own responsibility.
+  Usage: $(basename $0) "<project name>" <file> [files...]
 
-  IF YOU DO NOT ACCEPT THESE TERMS, DO NOT USE THIS SCRIPT.
+  <project name> is used to locate the:
+  - <project_name>.xcodeproj
+  - file group <project_name>
+  - build target <project_name>
 
-  Usage: xcodeproj-add-ref "<project name>" <files> [files...]
+  All files are added to the file group and target build phase
+  The file group will also sorted after adding the new files.
 
-  <project name> This is expected to be:
-    - project
-    - source group (folder)
-    - target name
+  The expected location of the files is within the folder named <project_name>,
+  which resides in the root directory recognized by XCode as the project's main
+  folder. This folder will already contain existing source code.
 
-  - <files> added to the source group and target source build phase
-  - The source group is then sorted
-  - The project is saved.
-  }
+}
 
   exit 1
 end

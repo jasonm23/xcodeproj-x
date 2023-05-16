@@ -112,7 +112,7 @@ HERE
         rm "$selection_temp_filename" "${swift_temp_filename}"
         echo "Created: $output_filename"
 
-        xcodeproj-add-ref "$project_name" "$(basename "${output_filename}")"
+        xcproj-add-ref "$project_name" "$(basename "${output_filename}")"
     done
 
 rm "$imports_tmp_file" "${line_select_temp_file}"

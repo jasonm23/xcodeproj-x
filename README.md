@@ -2,7 +2,7 @@
 
 
 - [xcproj-extract](#xcproj-extract)
-- [xcodeproj-add-ref](#xcodeproj-add-ref)
+- [xcproj-add-ref](#xcproj-add-ref)
 
 If you plan to use these, please ensure all project changes committed to git, so you can do a clean reset on the changes it performs in event of an error.
 
@@ -46,9 +46,9 @@ does not get an even number of lines selected.
 to confirm your selections, <kbd>Esc</kbd> quits.  Default fzf keyboard bindings
 are used.  
 
-`xcproj-extract` uses `xcodeproj-add-ref` so it will need to find its location in your `$PATH`
+`xcproj-extract` uses `xcproj-add-ref` so it will need to find its location in your `$PATH`
 
-## xcodeproj-add-ref
+## xcproj-add-ref
 
 Add file(s) to a XCode project, they will be added to a source group and target/build
 phase. The source group is also sorted.
@@ -58,7 +58,7 @@ phase. The source group is also sorted.
 ``` shell
 Usage: 
 
-xcodeproj-add-ref <project name> <files> [files...]
+xcproj-add-ref <project name> <files> [files...]
 ```
 `<project_name>` will be used for:
         
